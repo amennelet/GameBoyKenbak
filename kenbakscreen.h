@@ -1,7 +1,5 @@
 #include <types.h>
-#include "spritehelper.h"
-
-struct SpriteDisplay sprites[5];
+#include "kenbakmachine.h"
 
 void InitKenbakSprites();
-void UpdateKenbakScreen(UINT8);
+void UpdateKenbakScreen(UINT8, struct KenbakMachineState *);

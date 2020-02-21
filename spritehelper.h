@@ -6,8 +6,8 @@
 #define BUTTON_WHITE_SPRITE_INDEX 0x04;
 #define CURSOR_SPRITE_INDEX 0x05;
 
-#define HIDE_SPRITE 0x18U
-#define SHOW_SPRITE 0x10U
+#define HIDE_SPRITE 0x90
+#define SHOW_SPRITE 0x10
 
 struct SpriteDisplay
 {
@@ -18,6 +18,7 @@ struct SpriteDisplay
     UINT8 show;
 };
 
-void initSpriteDisplay(struct SpriteDisplay *);
+void initSpriteDisplay(struct SpriteDisplay *, UINT8);
 void ShowSprite(struct SpriteDisplay *);
 void HideSprite(struct SpriteDisplay *);
+void SwitchSprite(BOOLEAN, struct SpriteDisplay *);
