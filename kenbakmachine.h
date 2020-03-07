@@ -123,3 +123,8 @@ void ExecuteKenbakMachineInstruction(struct KenbakMachineState *, struct KenbakM
 UINT8 GetOperandFromAddressingOrJumpInstruction(struct KenbakMachineState *, struct KenbakMachineInstruction *);
 UINT8 GetRegisterAddress(UINT8);
 UINT8 GetOcRegisterAddress(UINT8);
+
+void ToggleKenbakMachinePower(struct KenbakMachineState *);
+void ToggleKenbakMachineLock(struct KenbakMachineState *);
+void ToggleKenbakMachineRun(struct KenbakMachineState *);
+void ToggleKenbakMachineOneStep(struct KenbakMachineState *);

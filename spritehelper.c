@@ -6,9 +6,16 @@ void initSpriteDisplay(struct SpriteDisplay *spriteDisplay, UINT8 count)
     for (UINT8 cptSprite = 0; cptSprite < count; cptSprite++)
     {
         set_sprite_tile(spriteDisplay[cptSprite].spriteId, spriteDisplay[cptSprite].spriteIndex);
-        move_sprite(spriteDisplay[cptSprite].spriteId, (spriteDisplay[cptSprite].x * 8) + 8, (spriteDisplay[cptSprite].y * 8) + 16);
+        MoveSprite(spriteDisplay[cptSprite].x, spriteDisplay[cptSprite].y, &spriteDisplay[cptSprite]);
         ShowSprite(&(spriteDisplay[cptSprite]));
     }
+}
+
+void initCusorDisplay(struct SpriteDisplay *spriteDisplay)
+{
+    set_sprite_tile(spriteDisplay->spriteId, spriteDisplay->spriteIndex);
+    MoveSprite(spriteDisplay->x, spriteDisplay->y, spriteDisplay);
+    set_sprite_prop(spriteDisplay->spriteId, 0);
 }
 
 void ShowSprite(struct SpriteDisplay *spriteDisplay)
@@ -27,4 +34,9 @@ void SwitchSprite(BOOLEAN show, struct SpriteDisplay *spriteDisplay)
         ShowSprite(spriteDisplay);
     else
         HideSprite(spriteDisplay);
+}
+
+void MoveSprite(UINT8 x, UINT8 y, struct SpriteDisplay *spriteDisplay)
+{
+    move_sprite(spriteDisplay->spriteId, (x * 8) + 8, (y * 8) + 16);
 }

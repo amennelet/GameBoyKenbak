@@ -19,12 +19,21 @@ void main(void)
     set_bkg_data(0, 110, BackgroundTiles);
     set_sprite_data(0, 6, SpriteTiles);
 
+    UINT8 previousKeys = 0;
     UINT8 frame = 0;
     while (1)
     {
         frame++;
 
         // manage input
+        UINT8 keys = joypad();
+        if (keys > 0 && keys != previousKeys)
+        {
+            if (manageUserInput(currentScreen, keys, &kenbakMachineState) != currentScreen)
+                changeScreen = CHANGE_SCREEN;
+        }
+        previousKeys = keys;
+
         // update machine state
         if (frame == MACHINE_SPEED)
         {
@@ -37,6 +46,27 @@ void main(void)
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
     }
+}
+
+UINT8 manageUserInput(UINT8 currentScreen, UINT8 keys, struct KenbakMachineState *kenbakMachineState)
+{
+    if (currentScreen == KENBAK_SCREEN)
+    {
+        return manageKenbakScreenUserInput(keys, kenbakMachineState);
+    }
+    if (currentScreen == MEMORY_SCREEN)
+    {
+        //UpdateMemoryScreen(changeScreen);
+    }
+    if (currentScreen == FILE_SCREEN)
+    {
+        //UpdateFileScreen(changeScreen);
+    }
+    if (currentScreen == MANUAL_SCREEN)
+    {
+        //UpdateManualScreen(changeScreen);
+    }
+    return currentScreen;
 }
 
 void updateScreen(UINT8 currentScreen, UINT8 changeScreen, struct KenbakMachineState *kenbakMachineState)

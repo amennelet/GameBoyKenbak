@@ -5,3 +5,4 @@
 const UINT8 MACHINE_SPEED = 5;
 
 void updateScreen(UINT8, UINT8, struct KenbakMachineState *);
+UINT8 manageUserInput(UINT8, UINT8, struct KenbakMachineState *);

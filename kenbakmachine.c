@@ -39,6 +39,17 @@ void SetKenbakMachinePower(struct KenbakMachineState *kenbakMachineState, BOOLEA
 {
     kenbakMachineState->powerButton = set;
     kenbakMachineState->powerSignal = set;
+    if (set == 0)
+    {
+        // TODO: clear machine state on power down
+        //InitKenbakMachineState(kenbakMachineState);
+        SetKenbakMachineLock(kenbakMachineState, 0);
+        SetKenbakMachineRun(kenbakMachineState, 0);
+        kenbakMachineState->outputValue = 0;
+        kenbakMachineState->addressSignal = 0;
+        kenbakMachineState->clearSignal = 0;
+        kenbakMachineState->memorySignal = 0;
+    }
 }
 
 void SetKenbakMachineLock(struct KenbakMachineState *kenbakMachineState, BOOLEAN set)
@@ -55,6 +66,52 @@ void SetKenbakMachineRun(struct KenbakMachineState *kenbakMachineState, BOOLEAN 
 void SetKenbakMachineOneStep(struct KenbakMachineState *kenbakMachineState, BOOLEAN set)
 {
     kenbakMachineState->oneStepMode = set;
+    kenbakMachineState->lockSignal = set;
+}
+
+void ToggleKenbakMachinePower(struct KenbakMachineState *kenbakMachineState)
+{
+    if (kenbakMachineState->powerSignal == 0)
+    {
+        SetKenbakMachinePower(kenbakMachineState, 1);
+    }
+    else
+    {
+        SetKenbakMachinePower(kenbakMachineState, 0);
+    }
+}
+void ToggleKenbakMachineLock(struct KenbakMachineState *kenbakMachineState)
+{
+    if (kenbakMachineState->lockSignal == 0)
+    {
+        SetKenbakMachineLock(kenbakMachineState, 1);
+    }
+    else
+    {
+        SetKenbakMachineLock(kenbakMachineState, 0);
+    }
+}
+void ToggleKenbakMachineRun(struct KenbakMachineState *kenbakMachineState)
+{
+    if (kenbakMachineState->runSignal == 0)
+    {
+        SetKenbakMachineRun(kenbakMachineState, 1);
+    }
+    else
+    {
+        SetKenbakMachineRun(kenbakMachineState, 0);
+    }
+}
+void ToggleKenbakMachineOneStep(struct KenbakMachineState *kenbakMachineState)
+{
+    if (kenbakMachineState->oneStepMode == 0)
+    {
+        SetKenbakMachineOneStep(kenbakMachineState, 1);
+    }
+    else
+    {
+        SetKenbakMachineOneStep(kenbakMachineState, 0);
+    }
 }
 
 UINT8 GetKenbakMachineRegisterFromInstruction(UINT8 codedInstruction)

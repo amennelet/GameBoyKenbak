@@ -19,6 +19,8 @@ struct SpriteDisplay
 };
 
 void initSpriteDisplay(struct SpriteDisplay *, UINT8);
+void initCusorDisplay(struct SpriteDisplay *);
 void ShowSprite(struct SpriteDisplay *);
 void HideSprite(struct SpriteDisplay *);
 void SwitchSprite(BOOLEAN, struct SpriteDisplay *);
+void MoveSprite(UINT8, UINT8, struct SpriteDisplay *);

@@ -4,6 +4,7 @@
 #include "Asset\KenbakBackgroundMap.h"
 #include "Asset\KenbakMenuMap.h"
 #include "spritehelper.h"
+#include "kenbakmachine.h"
 
 struct SpriteDisplay ledDisplay[8];
 struct SpriteDisplay ledPower[1];
@@ -22,11 +23,32 @@ struct SpriteDisplay buttonLock[1];
 struct SpriteDisplay buttonMemoryRead[1];
 struct SpriteDisplay buttonMemoryStore[1];
 struct SpriteDisplay buttonRun[1];
+struct SpriteDisplay cursor[1];
+
+struct CusorPosition cusorPositionButtonDisplay[8];
+struct CusorPosition cusorPositionButtonPower[1];
+struct CusorPosition cusorPositionButtonAddressDisplay[1];
+struct CusorPosition cusorPositionButtonAddressSet[1];
+struct CusorPosition cusorPositionButtonMemoryRead[1];
+struct CusorPosition cusorPositionButtonMemoryStore[1];
+struct CusorPosition cusorPositionButtonClear[1];
+struct CusorPosition cusorPositionButtonLock[1];
+struct CusorPosition cusorPositionButtonRun[1];
+
+struct CusorPosition *currentCursorPosition;
 
 void InitKenbakSprites()
 {
     UINT8 show = SHOW_SPRITE;
     UINT8 spriteId = 0;
+
+    cursor[0].spriteId = spriteId++;
+    cursor[0].spriteIndex = CURSOR_SPRITE_INDEX;
+    cursor[0].x = currentCursorPosition->x;
+    cursor[0].y = currentCursorPosition->y;
+    cursor[0].show = show;
+    initCusorDisplay(cursor);
+
     UINT8 displayX = 12;
     for (UINT8 cptLedDisplay = 0; cptLedDisplay < 8; cptLedDisplay++)
     {
@@ -161,6 +183,102 @@ void InitKenbakSprites()
     initSpriteDisplay(buttonRun, 1);
 }
 
+void InitCursor()
+{
+    UINT8 displayX = 12;
+    for (UINT8 cptButtonDisplay = 0; cptButtonDisplay < 8; cptButtonDisplay++)
+    {
+        cusorPositionButtonDisplay[cptButtonDisplay].x = displayX;
+        cusorPositionButtonDisplay[cptButtonDisplay].y = 4;
+        cusorPositionButtonDisplay[cptButtonDisplay].action = BIT_ACTION;
+        cusorPositionButtonDisplay[cptButtonDisplay].actionIndex = cptButtonDisplay;
+
+        cusorPositionButtonDisplay[cptButtonDisplay].left = 0;
+        if (cptButtonDisplay < 7)
+            cusorPositionButtonDisplay[cptButtonDisplay].left = &cusorPositionButtonDisplay[cptButtonDisplay + 1];
+        cusorPositionButtonDisplay[cptButtonDisplay].right = cusorPositionButtonPower;
+        if (cptButtonDisplay > 0)
+            cusorPositionButtonDisplay[cptButtonDisplay].right = &cusorPositionButtonDisplay[cptButtonDisplay - 1];
+        cusorPositionButtonDisplay[cptButtonDisplay].up = 0;
+        if (cptButtonDisplay < 3)
+            cusorPositionButtonDisplay[cptButtonDisplay].down = cusorPositionButtonClear;
+        else if (cptButtonDisplay < 6)
+            cusorPositionButtonDisplay[cptButtonDisplay].down = cusorPositionButtonAddressSet;
+        else
+            cusorPositionButtonDisplay[cptButtonDisplay].down = cusorPositionButtonAddressDisplay;
+
+        displayX--;
+        if (cptButtonDisplay == 2 || cptButtonDisplay == 5)
+            displayX--;
+    }
+
+    cusorPositionButtonPower[0].x = 16;
+    cusorPositionButtonPower[0].y = 4;
+    cusorPositionButtonPower[0].action = POWER_ACTION;
+    cusorPositionButtonPower[0].left = &cusorPositionButtonDisplay[0];
+    cusorPositionButtonPower[0].right = 0;
+    cusorPositionButtonPower[0].up = 0;
+    cusorPositionButtonPower[0].down = cusorPositionButtonLock;
+
+    cusorPositionButtonAddressDisplay[0].x = 4;
+    cusorPositionButtonAddressDisplay[0].y = 8;
+    cusorPositionButtonAddressDisplay[0].action = DISPLAY_ADDRESS_ACTION;
+    cusorPositionButtonAddressDisplay[0].left = 0;
+    cusorPositionButtonAddressDisplay[0].right = cusorPositionButtonAddressSet;
+    cusorPositionButtonAddressDisplay[0].up = &cusorPositionButtonDisplay[6];
+    cusorPositionButtonAddressDisplay[0].down = cusorPositionButtonMemoryRead;
+
+    cusorPositionButtonAddressSet[0].x = 8;
+    cusorPositionButtonAddressSet[0].y = 8;
+    cusorPositionButtonAddressSet[0].action = SET_ADDRESS_ACTION;
+    cusorPositionButtonAddressSet[0].left = cusorPositionButtonAddressDisplay;
+    cusorPositionButtonAddressSet[0].right = cusorPositionButtonClear;
+    cusorPositionButtonAddressSet[0].up = &cusorPositionButtonDisplay[3];
+    cusorPositionButtonAddressSet[0].down = cusorPositionButtonMemoryStore;
+
+    cusorPositionButtonMemoryRead[0].x = 4;
+    cusorPositionButtonMemoryRead[0].y = 12;
+    cusorPositionButtonMemoryRead[0].action = READ_MEMORY_ACTION;
+    cusorPositionButtonMemoryRead[0].left = 0;
+    cusorPositionButtonMemoryRead[0].right = cusorPositionButtonMemoryStore;
+    cusorPositionButtonMemoryRead[0].up = cusorPositionButtonAddressDisplay;
+    cusorPositionButtonMemoryRead[0].down = 0;
+
+    cusorPositionButtonMemoryStore[0].x = 8;
+    cusorPositionButtonMemoryStore[0].y = 12;
+    cusorPositionButtonMemoryStore[0].action = STORE_MEMORY_ACTION;
+    cusorPositionButtonMemoryStore[0].left = cusorPositionButtonMemoryRead;
+    cusorPositionButtonMemoryStore[0].right = cusorPositionButtonRun;
+    cusorPositionButtonMemoryStore[0].up = cusorPositionButtonAddressSet;
+    cusorPositionButtonMemoryStore[0].down = 0;
+
+    cusorPositionButtonClear[0].x = 12;
+    cusorPositionButtonClear[0].y = 8;
+    cusorPositionButtonClear[0].action = CLEAR_ACTION;
+    cusorPositionButtonClear[0].left = cusorPositionButtonAddressSet;
+    cusorPositionButtonClear[0].right = cusorPositionButtonLock;
+    cusorPositionButtonClear[0].up = &cusorPositionButtonDisplay[0];
+    cusorPositionButtonClear[0].down = cusorPositionButtonRun;
+
+    cusorPositionButtonLock[0].x = 16;
+    cusorPositionButtonLock[0].y = 8;
+    cusorPositionButtonLock[0].action = LOCK_ACTION;
+    cusorPositionButtonLock[0].left = cusorPositionButtonClear;
+    cusorPositionButtonLock[0].right = 0;
+    cusorPositionButtonLock[0].up = cusorPositionButtonPower;
+    cusorPositionButtonLock[0].down = cusorPositionButtonRun;
+
+    cusorPositionButtonRun[0].x = 16;
+    cusorPositionButtonRun[0].y = 12;
+    cusorPositionButtonRun[0].action = RUN_ACTION;
+    cusorPositionButtonRun[0].left = cusorPositionButtonMemoryStore;
+    cusorPositionButtonRun[0].right = 0;
+    cusorPositionButtonRun[0].up = cusorPositionButtonLock;
+    cusorPositionButtonRun[0].down = 0;
+
+    currentCursorPosition = &cusorPositionButtonDisplay[7];
+}
+
 void UpdateKenbakScreen(UINT8 changeScreen, struct KenbakMachineState *kenbakMachineState)
 {
     if (changeScreen == CHANGE_SCREEN)
@@ -172,6 +290,7 @@ void UpdateKenbakScreen(UINT8 changeScreen, struct KenbakMachineState *kenbakMac
         set_bkg_tiles(0, 0, KenbakBackgroundMapWidth, KenbakBackgroundMapHeight, KenbakBackgroundMap);
         set_win_tiles(0, 0, KenbakMenuMapWidth, KenbakMenuMapHeight, KenbakMenuMap);
         move_win(7, 136);
+        InitCursor();
         InitKenbakSprites();
 
         SHOW_BKG;
@@ -202,4 +321,73 @@ void UpdateKenbakScreen(UINT8 changeScreen, struct KenbakMachineState *kenbakMac
     SwitchSprite(kenbakMachineState->memoryReadButton, &(buttonMemoryRead[0]));
     SwitchSprite(kenbakMachineState->memoryStoreButton, &(buttonMemoryStore[0]));
     SwitchSprite(kenbakMachineState->runButton, &(buttonRun[0]));
+
+    MoveSprite(currentCursorPosition->x, currentCursorPosition->y, &cursor[0]);
+}
+
+UINT8 manageKenbakScreenUserInput(UINT8 keys, struct KenbakMachineState *kenbakMachineState)
+{
+    if (keys & J_A)
+    {
+        // get cursor position and apply action
+        if (currentCursorPosition->action == BIT_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == POWER_ACTION)
+        {
+            ToggleKenbakMachinePower(kenbakMachineState);
+        }
+        else if (currentCursorPosition->action == DISPLAY_ADDRESS_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == SET_ADDRESS_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == READ_MEMORY_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == STORE_MEMORY_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == CLEAR_ACTION)
+        {
+        }
+        else if (currentCursorPosition->action == LOCK_ACTION)
+        {
+            ToggleKenbakMachineLock(kenbakMachineState);
+        }
+        else if (currentCursorPosition->action == RUN_ACTION)
+        {
+            ToggleKenbakMachineRun(kenbakMachineState);
+        }
+    }
+    if (keys & J_START)
+    {
+        ToggleKenbakMachineRun(kenbakMachineState);
+    }
+    if (keys & J_SELECT)
+    {
+        ToggleKenbakMachineOneStep(kenbakMachineState);
+    }
+    if (keys & J_LEFT)
+    {
+        if (currentCursorPosition->left != 0)
+            currentCursorPosition = currentCursorPosition->left;
+    }
+    if (keys & J_RIGHT)
+    {
+        if (currentCursorPosition->right != 0)
+            currentCursorPosition = currentCursorPosition->right;
+    }
+    if (keys & J_UP)
+    {
+        if (currentCursorPosition->up != 0)
+            currentCursorPosition = currentCursorPosition->up;
+    }
+    if (keys & J_DOWN)
+    {
+        if (currentCursorPosition->down != 0)
+            currentCursorPosition = currentCursorPosition->down;
+    }
+    return KENBAK_SCREEN;
 }
