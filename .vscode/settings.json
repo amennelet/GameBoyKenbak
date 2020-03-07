@@ -1,5 +1,16 @@
 {
     "files.associations": {
         "backgroundmap.h": "c"
+    },
+    "files.exclude": {
+        "**/*.asm": true,
+        "**/*.lst": true,
+        "**/*.rel": true,
+        "**/*.sym": true,
+        "**/*.gb": true,
+        "**/*.ihx": true,
+        "**/*.lk": true,
+        "**/*.map": true,
+        "**/*.noi": true
     }
 }
