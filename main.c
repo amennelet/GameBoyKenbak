@@ -11,7 +11,6 @@ void main(void)
     InitKenbakMachineState(&kenbakMachineState);
     LoadKenbakMachineMemory(&kenbakMachineState, k200ProgramMemory);
     SetKenbakMachinePower(&kenbakMachineState, 1);
-    SetKenbakMachineRun(&kenbakMachineState, 1);
 
     UINT8 currentScreen = KENBAK_SCREEN;
     UINT8 changeScreen = CHANGE_SCREEN;
@@ -32,6 +31,10 @@ void main(void)
             if (manageUserInput(currentScreen, keys, &kenbakMachineState) != currentScreen)
                 changeScreen = CHANGE_SCREEN;
         }
+        if (keys == 0 && keys != previousKeys)
+        {
+            releaseButtons(&kenbakMachineState);
+        }
         previousKeys = keys;
 
         // update machine state
@@ -46,6 +49,11 @@ void main(void)
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
     }
+}
+
+void releaseButtons(struct KenbakMachineState *kenbakMachineState)
+{
+    releaseKenbakButtons(kenbakMachineState);
 }
 
 UINT8 manageUserInput(UINT8 currentScreen, UINT8 keys, struct KenbakMachineState *kenbakMachineState)

@@ -11,8 +11,8 @@ const UINT8 XRegisterAddress = 0002;
 const UINT8 PRegisterAddress = 0003;
 const UINT8 OutputRegisterAddress = 0200;
 const UINT8 OcARegisterAddress = 0201;
-const UINT8 OcBRegisterAddress = 0201;
-const UINT8 OcXRegisterAddress = 0201;
+const UINT8 OcBRegisterAddress = 0202;
+const UINT8 OcXRegisterAddress = 0203;
 const UINT8 InputRegisterAddress = 0377;
 
 struct KenbakMachineState
@@ -23,7 +23,7 @@ struct KenbakMachineState
     UINT8 outputValue;
     BOOLEAN powerSignal;
     BOOLEAN addressSignal;
-    BOOLEAN clearSignal;
+    BOOLEAN inputSignal;
     BOOLEAN lockSignal;
     BOOLEAN memorySignal;
     BOOLEAN runSignal;
@@ -40,6 +40,8 @@ struct KenbakMachineState
     BOOLEAN runButton;
 
     BOOLEAN oneStepMode;
+
+    UINT8 addressRegister;
 };
 
 struct KenbakMachineInstruction
@@ -64,27 +66,27 @@ struct KenbakMachineInstruction
 #define UNCONDITIONAL 4
 
 // processor instruction set
-#define ADD_KENBAK_INST 1
-#define SUB_KENBAK_INST 2
-#define LOAD_KENBAK_INST 3
-#define STORE_KENBAK_INST 4
-#define OR_KENBAK_INST 5
-#define AND_KENBAK_INST 6
-#define LNEG_KENBAK_INST 7
-#define JPD_KENBAK_INST 8
-#define JPI_KENBAK_INST 9
-#define JMD_KENBAK_INST 10
-#define JMI_KENBAK_INST 11
-#define BITSET_0_KENBAK_INST 12
-#define BITSET_1_KENBAK_INST 13
-#define BITSKIP_0_KENBAK_INST 14
-#define BITSKIP_1_KENBAK_INST 15
-#define SHIFT_RIGHT_KENBAK_INST 16
-#define SHIFT_LEFT_KENBAK_INST 17
-#define ROTATE_RIGHT_KENBAK_INST 18
-#define ROTATE_LEFT_KENBAK_INST 19
-#define HALT_KENBAK_INST 20
-#define NOOP_KENBAK_INST 21
+#define ADD_KENBAK_INST 1           // 001
+#define SUB_KENBAK_INST 2           // 002
+#define LOAD_KENBAK_INST 3          // 003
+#define STORE_KENBAK_INST 4         // 004
+#define OR_KENBAK_INST 5            // 005
+#define AND_KENBAK_INST 6           // 006
+#define LNEG_KENBAK_INST 7          // 007
+#define JPD_KENBAK_INST 8           // 010
+#define JPI_KENBAK_INST 9           // 011
+#define JMD_KENBAK_INST 10          // 012
+#define JMI_KENBAK_INST 11          // 013
+#define BITSET_0_KENBAK_INST 12     // 014
+#define BITSET_1_KENBAK_INST 13     // 015
+#define BITSKIP_0_KENBAK_INST 14    // 016
+#define BITSKIP_1_KENBAK_INST 15    // 017
+#define SHIFT_RIGHT_KENBAK_INST 16  // 020
+#define SHIFT_LEFT_KENBAK_INST 17   // 021
+#define ROTATE_RIGHT_KENBAK_INST 18 // 022
+#define ROTATE_LEFT_KENBAK_INST 19  // 023
+#define HALT_KENBAK_INST 20         // 024
+#define NOOP_KENBAK_INST 21         // 025
 
 // addressing
 #define CONST_ADDRESSING 1
@@ -128,3 +130,11 @@ void ToggleKenbakMachinePower(struct KenbakMachineState *);
 void ToggleKenbakMachineLock(struct KenbakMachineState *);
 void ToggleKenbakMachineRun(struct KenbakMachineState *);
 void ToggleKenbakMachineOneStep(struct KenbakMachineState *);
+void PressKenbakMachineInputBit(struct KenbakMachineState *, UINT8);
+void PressKenbakMachineAddressDisplay(struct KenbakMachineState *);
+void PressKenbakMachineAddressSet(struct KenbakMachineState *);
+void PressKenbakMachineMemoryRead(struct KenbakMachineState *);
+void PressKenbakMachineMemoryStore(struct KenbakMachineState *);
+void PressKenbakMachineClear(struct KenbakMachineState *);
+
+void releaseKenbakButtons(struct KenbakMachineState *);

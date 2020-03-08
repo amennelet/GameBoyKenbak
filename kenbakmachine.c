@@ -9,7 +9,7 @@ void InitKenbakMachineState(struct KenbakMachineState *kenbakMachineState)
     kenbakMachineState->outputValue = 0;
     kenbakMachineState->powerSignal = 0;
     kenbakMachineState->addressSignal = 0;
-    kenbakMachineState->clearSignal = 0;
+    kenbakMachineState->inputSignal = 0;
     kenbakMachineState->lockSignal = 0;
     kenbakMachineState->memorySignal = 0;
     kenbakMachineState->runSignal = 0;
@@ -25,6 +25,8 @@ void InitKenbakMachineState(struct KenbakMachineState *kenbakMachineState)
     kenbakMachineState->runButton = 0;
 
     kenbakMachineState->oneStepMode = 0;
+
+    kenbakMachineState->addressRegister = 0;
 }
 
 void LoadKenbakMachineMemory(struct KenbakMachineState *kenbakMachineState, UINT8 *memory)
@@ -41,14 +43,7 @@ void SetKenbakMachinePower(struct KenbakMachineState *kenbakMachineState, BOOLEA
     kenbakMachineState->powerSignal = set;
     if (set == 0)
     {
-        // TODO: clear machine state on power down
-        //InitKenbakMachineState(kenbakMachineState);
-        SetKenbakMachineLock(kenbakMachineState, 0);
-        SetKenbakMachineRun(kenbakMachineState, 0);
-        kenbakMachineState->outputValue = 0;
-        kenbakMachineState->addressSignal = 0;
-        kenbakMachineState->clearSignal = 0;
-        kenbakMachineState->memorySignal = 0;
+        InitKenbakMachineState(kenbakMachineState);
     }
 }
 
@@ -61,12 +56,14 @@ void SetKenbakMachineLock(struct KenbakMachineState *kenbakMachineState, BOOLEAN
 void SetKenbakMachineRun(struct KenbakMachineState *kenbakMachineState, BOOLEAN set)
 {
     kenbakMachineState->runSignal = set;
+    kenbakMachineState->inputSignal = 0;
+    kenbakMachineState->addressSignal = 0;
+    kenbakMachineState->memorySignal = 0;
 }
 
 void SetKenbakMachineOneStep(struct KenbakMachineState *kenbakMachineState, BOOLEAN set)
 {
     kenbakMachineState->oneStepMode = set;
-    kenbakMachineState->lockSignal = set;
 }
 
 void ToggleKenbakMachinePower(struct KenbakMachineState *kenbakMachineState)
@@ -101,6 +98,7 @@ void ToggleKenbakMachineRun(struct KenbakMachineState *kenbakMachineState)
     {
         SetKenbakMachineRun(kenbakMachineState, 0);
     }
+    kenbakMachineState->runButton = 1;
 }
 void ToggleKenbakMachineOneStep(struct KenbakMachineState *kenbakMachineState)
 {
@@ -112,6 +110,72 @@ void ToggleKenbakMachineOneStep(struct KenbakMachineState *kenbakMachineState)
     {
         SetKenbakMachineOneStep(kenbakMachineState, 0);
     }
+    kenbakMachineState->runButton = 1;
+}
+
+void PressKenbakMachineInputBit(struct KenbakMachineState *kenbakMachineState, UINT8 bitIndex)
+{
+    UINT8 mask = 0x01 << bitIndex;
+    kenbakMachineState->memory[InputRegisterAddress] |= mask;
+    kenbakMachineState->outputValue = kenbakMachineState->memory[InputRegisterAddress];
+    kenbakMachineState->outputButton = mask;
+    kenbakMachineState->inputSignal = 1;
+    kenbakMachineState->addressSignal = 0;
+    kenbakMachineState->memorySignal = 0;
+}
+void PressKenbakMachineAddressDisplay(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->outputValue = kenbakMachineState->addressRegister;
+    kenbakMachineState->addressDisplayButton = 1;
+    kenbakMachineState->inputSignal = 0;
+    kenbakMachineState->addressSignal = 1;
+    kenbakMachineState->memorySignal = 0;
+}
+void PressKenbakMachineAddressSet(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->addressRegister = kenbakMachineState->memory[InputRegisterAddress];
+    kenbakMachineState->addressSetButton = 1;
+    kenbakMachineState->inputSignal = 0;
+    kenbakMachineState->addressSignal = 1;
+    kenbakMachineState->memorySignal = 0;
+}
+void PressKenbakMachineMemoryRead(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->outputValue = kenbakMachineState->memory[kenbakMachineState->addressRegister];
+    kenbakMachineState->addressRegister++;
+    kenbakMachineState->memoryReadButton = 1;
+    kenbakMachineState->inputSignal = 0;
+    kenbakMachineState->addressSignal = 0;
+    kenbakMachineState->memorySignal = 1;
+}
+void PressKenbakMachineMemoryStore(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->memory[kenbakMachineState->addressRegister] = kenbakMachineState->memory[InputRegisterAddress];
+    kenbakMachineState->addressRegister++;
+    kenbakMachineState->memoryStoreButton = 1;
+    kenbakMachineState->inputSignal = 0;
+    kenbakMachineState->addressSignal = 0;
+    kenbakMachineState->memorySignal = 1;
+}
+void PressKenbakMachineClear(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->memory[InputRegisterAddress] = 0;
+    kenbakMachineState->outputValue = 0;
+    kenbakMachineState->clearButton = 1;
+    kenbakMachineState->inputSignal = 1;
+    kenbakMachineState->addressSignal = 0;
+    kenbakMachineState->memorySignal = 0;
+}
+
+void releaseKenbakButtons(struct KenbakMachineState *kenbakMachineState)
+{
+    kenbakMachineState->outputButton = 0;
+    kenbakMachineState->addressDisplayButton = 0;
+    kenbakMachineState->addressSetButton = 0;
+    kenbakMachineState->clearButton = 0;
+    kenbakMachineState->memoryReadButton = 0;
+    kenbakMachineState->memoryStoreButton = 0;
+    kenbakMachineState->runButton = 0;
 }
 
 UINT8 GetKenbakMachineRegisterFromInstruction(UINT8 codedInstruction)
@@ -274,7 +338,6 @@ UINT8 GetOperandFromAddressingOrJumpInstruction(struct KenbakMachineState *kenba
     if (kenbakMachineInstruction->instruction == ADD_KENBAK_INST ||
         kenbakMachineInstruction->instruction == SUB_KENBAK_INST ||
         kenbakMachineInstruction->instruction == LOAD_KENBAK_INST ||
-        kenbakMachineInstruction->instruction == STORE_KENBAK_INST ||
         kenbakMachineInstruction->instruction == AND_KENBAK_INST ||
         kenbakMachineInstruction->instruction == OR_KENBAK_INST ||
         kenbakMachineInstruction->instruction == LNEG_KENBAK_INST ||
@@ -351,15 +414,17 @@ void ExecuteKenbakMachineInstruction(struct KenbakMachineState *kenbakMachineSta
         UINT8 ocRegisterAddress = GetOcRegisterAddress(kenbakMachineInstruction->instructionRegister);
         kenbakMachineState->memory[ocRegisterAddress] = 0x00;
 
-        UINT16 result = 0;
+        INT16 registerValue = kenbakMachineState->memory[registerAddress];
+        INT16 operandValue = operand;
+        INT16 result = 0;
         if (kenbakMachineInstruction->instruction == ADD_KENBAK_INST)
-            result = (UINT16)kenbakMachineState->memory[registerAddress] + (UINT16)operand;
+            result = registerValue + operandValue;
         else // SUB_KENBAK_INST
-            result = (UINT16)kenbakMachineState->memory[registerAddress] - (UINT16)operand;
+            result = registerValue - operandValue;
 
-        kenbakMachineState->memory[registerAddress] = (UINT8)result;
+        kenbakMachineState->memory[registerAddress] = (UINT8)(result & 0x00FF);
         // I don't understand how to calcul Overflow and carry bit
-        if (result > 0xFF)
+        if (result > 127 || result < -128)
             kenbakMachineState->memory[ocRegisterAddress] = 0x03;
     }
     else if (kenbakMachineInstruction->instruction == LOAD_KENBAK_INST)
@@ -368,7 +433,17 @@ void ExecuteKenbakMachineInstruction(struct KenbakMachineState *kenbakMachineSta
     }
     else if (kenbakMachineInstruction->instruction == STORE_KENBAK_INST)
     {
-        kenbakMachineState->memory[operand] = kenbakMachineState->memory[registerAddress];
+        UINT8 storageAddress = kenbakMachineState->memory[PRegisterAddress] + 1;
+        if (kenbakMachineInstruction->addressing == MEMORY_ADDRESSING)
+            storageAddress = kenbakMachineInstruction->secondByte;
+        else if (kenbakMachineInstruction->addressing == INDIRECT_ADDRESSING)
+            storageAddress = kenbakMachineState->memory[kenbakMachineInstruction->secondByte];
+        else if (kenbakMachineInstruction->addressing == INDEXED_ADDRESSING)
+            storageAddress = kenbakMachineInstruction->secondByte + kenbakMachineState->memory[XRegisterAddress];
+        else if (kenbakMachineInstruction->addressing == INDIRECT_INDEXED_ADDRESSING)
+            storageAddress = kenbakMachineState->memory[kenbakMachineInstruction->secondByte] + kenbakMachineState->memory[XRegisterAddress];
+
+        kenbakMachineState->memory[storageAddress] = kenbakMachineState->memory[registerAddress];
     }
     else if (kenbakMachineInstruction->instruction == AND_KENBAK_INST)
     {
@@ -470,8 +545,10 @@ void DoKenbakMachineNextInstruction(struct KenbakMachineState *kenbakMachineStat
     struct KenbakMachineInstruction kenbakMachineInstruction;
     UINT8 nextInstructionAddress = kenbakMachineState->memory[PRegisterAddress];
     DecodeKenbakMachineInstruction(kenbakMachineState->memory[nextInstructionAddress], kenbakMachineState->memory[nextInstructionAddress + 1], &kenbakMachineInstruction);
+
     ExecuteKenbakMachineInstruction(kenbakMachineState, &kenbakMachineInstruction);
     kenbakMachineState->memory[PRegisterAddress] += kenbakMachineInstruction.pRegisterInc;
+    kenbakMachineState->addressRegister = kenbakMachineState->memory[PRegisterAddress];
 
     // Normal mode
     kenbakMachineState->outputValue = kenbakMachineState->memory[OutputRegisterAddress];

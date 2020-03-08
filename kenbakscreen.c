@@ -258,7 +258,7 @@ void InitCursor()
     cusorPositionButtonClear[0].left = cusorPositionButtonAddressSet;
     cusorPositionButtonClear[0].right = cusorPositionButtonLock;
     cusorPositionButtonClear[0].up = &cusorPositionButtonDisplay[0];
-    cusorPositionButtonClear[0].down = cusorPositionButtonRun;
+    cusorPositionButtonClear[0].down = cusorPositionButtonMemoryStore;
 
     cusorPositionButtonLock[0].x = 16;
     cusorPositionButtonLock[0].y = 8;
@@ -304,7 +304,7 @@ void UpdateKenbakScreen(UINT8 changeScreen, struct KenbakMachineState *kenbakMac
     }
     SwitchSprite(kenbakMachineState->powerSignal, &(ledPower[0]));
     SwitchSprite(kenbakMachineState->addressSignal, &(ledAddress[0]));
-    SwitchSprite(kenbakMachineState->clearSignal, &(ledClear[0]));
+    SwitchSprite(kenbakMachineState->inputSignal, &(ledClear[0]));
     SwitchSprite(kenbakMachineState->lockSignal, &(ledLock[0]));
     SwitchSprite(kenbakMachineState->memorySignal, &(ledMemory[0]));
     SwitchSprite(kenbakMachineState->runSignal, &(ledRun[0]));
@@ -332,6 +332,7 @@ UINT8 manageKenbakScreenUserInput(UINT8 keys, struct KenbakMachineState *kenbakM
         // get cursor position and apply action
         if (currentCursorPosition->action == BIT_ACTION)
         {
+            PressKenbakMachineInputBit(kenbakMachineState, currentCursorPosition->actionIndex);
         }
         else if (currentCursorPosition->action == POWER_ACTION)
         {
@@ -339,18 +340,23 @@ UINT8 manageKenbakScreenUserInput(UINT8 keys, struct KenbakMachineState *kenbakM
         }
         else if (currentCursorPosition->action == DISPLAY_ADDRESS_ACTION)
         {
+            PressKenbakMachineAddressDisplay(kenbakMachineState);
         }
         else if (currentCursorPosition->action == SET_ADDRESS_ACTION)
         {
+            PressKenbakMachineAddressSet(kenbakMachineState);
         }
         else if (currentCursorPosition->action == READ_MEMORY_ACTION)
         {
+            PressKenbakMachineMemoryRead(kenbakMachineState);
         }
         else if (currentCursorPosition->action == STORE_MEMORY_ACTION)
         {
+            PressKenbakMachineMemoryStore(kenbakMachineState);
         }
         else if (currentCursorPosition->action == CLEAR_ACTION)
         {
+            PressKenbakMachineClear(kenbakMachineState);
         }
         else if (currentCursorPosition->action == LOCK_ACTION)
         {
