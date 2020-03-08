@@ -150,6 +150,8 @@ void PressKenbakMachineMemoryRead(struct KenbakMachineState *kenbakMachineState)
 }
 void PressKenbakMachineMemoryStore(struct KenbakMachineState *kenbakMachineState)
 {
+    if (kenbakMachineState->lockSignal == 1)
+        return;
     kenbakMachineState->memory[kenbakMachineState->addressRegister] = kenbakMachineState->memory[InputRegisterAddress];
     kenbakMachineState->addressRegister++;
     kenbakMachineState->memoryStoreButton = 1;
